@@ -2,14 +2,14 @@ import ballerina/http;
 import ballerina/log;
 import ballerinax/java.jms;
 
-configurable string initialContextFactory = "com.solacesystems.jndi.SolJNDIInitialContextFactory";
-configurable string providerUrl = "tcps://mr-connection-ckf06k0uyp7.messaging.solace.cloud:55443";
-configurable string connectionFactoryName = "/jms/cf/default";
-configurable string solaceUsername = "solace-cloud-client";
-configurable string solacePassword = "ghumgnujum49tb39prlu3s41om";
-configurable string solaceJmsVpn = "order-event-broker";
-configurable string queueName = "jms_order_queue";
-configurable string topicName = "jms_order_topic";
+configurable string initialContextFactory = "";
+configurable string providerUrl = "";
+configurable string connectionFactoryName = "";
+configurable string solaceUsername = "";
+configurable string solacePassword = "";
+configurable string solaceJmsVpn = "";
+configurable string queueName = "";
+configurable string topicName = "";
 
 type Customer record {
     string customerId;
@@ -94,7 +94,7 @@ public function main() returns error? {
     }
 }
 
-configurable string partnetApiUrl = "https://65e03872d3db23f76248a2aa.mockapi.io";
+configurable string partnetApiUrl = "";
 http:Client partnerApiClient = check new (partnetApiUrl);
 
 function getProductById(string productId) returns Product|error {
