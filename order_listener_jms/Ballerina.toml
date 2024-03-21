@@ -1,0 +1,13 @@
+[package]
+org = "madushanka"
+name = "order_listener_jms"
+version = "0.1.0"
+distribution = "2201.8.4"
+
+[build-options]
+observabilityIncluded = true
+
+[[platform.java11.dependency]]
+groupId = "com.solacesystems"
+artifactId = "sol-jms"
+version = "10.22.0" 
