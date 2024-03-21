@@ -37,17 +37,19 @@ enum PaymentMethod {
 }
 
 type PayementObject record {
-    string paymentObjectId;
+
+    string paymentObjectId = "";
     PaymentMethod PaymentMethod;
-    decimal amount;
+    decimal? amount = 0.0;
 };
 
 type OrderObject record {
     string orderId;
     Customer customer;
-    int quantity;
-    Product product;
-    PayementObject paymentObject;
+    decimal quantity;
+    Product? product?;
+    PayementObject? paymentObject;
+    PriceObject? priceObject?;
 };
 
 type OrderRequest record {
@@ -86,12 +88,20 @@ public function main() returns error? {
         if response is jms:TextMessage {
             json jsonOrder = check response.content.fromJsonString();
             OrderRequest orderReq = check jsonOrder.cloneWithType(OrderRequest);
-            Product product = check getProductById(orderReq.productId);
-            PriceObject priceObj = check getPriceObjectById(product.priceObjId);
+            OrderObject orderObj = check enrichOrder(orderReq);
 
-            log:printInfo("Message received: ", content = orderReq, product = product, priceObj = priceObj);
+            log:printInfo("Order Object ", orderObj = orderObj);
         }
     }
+}
+
+function enrichOrder(OrderRequest orderRequest) returns OrderObject|error {
+    OrderObject orderObj = transform(orderRequest);
+    Product product = check getProductById(orderRequest.productId);
+    PriceObject priceObj = check getPriceObjectById(product.priceObjId);
+    orderObj.product = product;
+    orderObj.priceObject = priceObj;
+    return orderObj;
 }
 
 configurable string partnetApiUrl = "";
@@ -114,3 +124,18 @@ function getPriceObjectById(string priceObjId) returns PriceObject|error {
     }
     return priceObjects[0];
 }
+
+function transform(OrderRequest orderRequest) returns OrderObject => {
+    orderId: orderRequest.orderId,
+    customer: {
+        customerId: orderRequest.customerId,
+        customerName: orderRequest.customerName,
+        customerAddress: orderRequest.customerAddress,
+        customerEmail: orderRequest.customerEmail,
+        customerPhone: orderRequest.customerPhone
+    },
+    quantity: orderRequest.quantity,
+    paymentObject: {
+        PaymentMethod: orderRequest.paymentMethod
+    }
+};
