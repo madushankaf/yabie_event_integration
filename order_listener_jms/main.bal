@@ -5,9 +5,9 @@ import ballerinax/java.jms;
 configurable string initialContextFactory = "";
 configurable string providerUrl = "";
 configurable string connectionFactoryName = "";
-configurable map<string> initialContextProperties = {
- 
-};
+configurable string solaceUsername = "";
+configurable string solacePassword = "";
+configurable string solaceJmsVpn = "";
 configurable string queueName = "";
 configurable string topicName = "";
 
@@ -69,7 +69,11 @@ public function main() returns error? {
         initialContextFactory = initialContextFactory,
         providerUrl = providerUrl,
         connectionFactoryName = connectionFactoryName,
-        properties = initialContextProperties
+        properties = {
+            "Solace_JMS_VPN": solaceJmsVpn,
+            "java.naming.security.principal": solaceUsername,
+            "java.naming.security.credentials": solacePassword
+        }
     );
     jms:Session session = check solaceBrokerConnection->createSession();
     jms:MessageConsumer orderConsumer = check session.createConsumer(
