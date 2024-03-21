@@ -86,13 +86,17 @@ public function main() returns error? {
     while true {
         jms:Message? response = check orderConsumer->receive();
         if response is jms:TextMessage {
-            json jsonOrder = check response.content.fromJsonString();
-            OrderRequest orderReq = check jsonOrder.cloneWithType(OrderRequest);
-            OrderObject orderObj = check enrichOrder(orderReq);
-
-            log:printInfo("Order Object ", orderObj = orderObj);
+            check processEvent(response);
         }
     }
+}
+
+function processEvent(jms:TextMessage response) returns error? {
+    json jsonOrder = check response.content.fromJsonString();
+    OrderRequest orderReq = check jsonOrder.cloneWithType(OrderRequest);
+    OrderObject orderObj = check enrichOrder(orderReq);
+    log:printInfo("Order Object ", orderObj = orderObj);
+    check executeOrder(orderObj);
 }
 
 function enrichOrder(OrderRequest orderRequest) returns OrderObject|error {
@@ -139,3 +143,13 @@ function transform(OrderRequest orderRequest) returns OrderObject => {
         PaymentMethod: orderRequest.paymentMethod
     }
 };
+
+configurable string backendApiUrl = "";
+http:Client backendApiClient = check new (backendApiUrl);
+
+function executeOrder(OrderObject orderObj) returns error? {
+    log:printInfo("Order Object ", orderObj = orderObj);
+    OrderObject savedOrder = check backendApiClient->post("/orders", orderObj);
+    log:printInfo("Order Response ", savedOrder = savedOrder);
+
+}
