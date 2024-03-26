@@ -1,6 +1,7 @@
-import ballerina/io;
 import ballerina/http;
-
+import ballerina/io;
+import ballerina/sql;
+import ballerinax/mysql;
 
 type Customer record {
     string customerId;
@@ -43,13 +44,24 @@ type OrderObject record {
     PriceObject? priceObject?;
 };
 
+configurable string dbHost = "";
+configurable string dbUser = "";
+configurable string dbPass = "";
+configurable string dbName = "";
+configurable int dbPort = 24276;
 
+final mysql:Client dbClient = check new (dbHost, dbUser, dbPass, dbName, dbPort);
 
 service / on new http:Listener(9090) {
 
+    resource function post orders(OrderObject orderObj) returns OrderObject|error {
 
-    resource function post orders(OrderObject orderObj) returns OrderObject {
         io:println("Order Received: ", orderObj);
+        sql:ParameterizedQuery query = `INSERT INTO orders (orderId, customerId, quantity, productId, price)
+                      VALUES (${orderObj.orderId}, ${orderObj.customer.customerId}, ${orderObj.quantity}, ${orderObj?.product?.productId}, ${orderObj?.priceObject?.price})`;
+        sql:ExecutionResult result = check dbClient->execute(query);
+        
         return orderObj;
+
     }
 }
